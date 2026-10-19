@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>건설 현장 안전 체크리스트</title>
+  <style>
+    :root { --bg:#0f3d2e; --card:#fff; --ok:#1b7a4e; --warn:#c0392b; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family:"Malgun Gothic",sans-serif; background:#eef4f0; color:#1a1a1a; }
+    header { background:var(--bg); color:#fff; padding:20px 16px; }
+    h1 { margin:0 0 6px; font-size:1.35rem; }
+    header p { margin:0; opacity:.9; font-size:.9rem; }
+    main { max-width:720px; margin:16px auto; padding:0 12px 40px; }
+    .bar { background:var(--card); border-radius:10px; padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .bar strong { color:var(--ok); }
+    section { background:var(--card); border-radius:10px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    h2 { margin:0; padding:12px 14px; background:#1b5c43; color:#fff; font-size:1rem; }
+    label { display:flex; gap:10px; padding:10px 14px; border-top:1px solid #eee; cursor:pointer; }
+    label:hover { background:#f7faf8; }
+    button { background:var(--bg); color:#fff; border:0; border-radius:8px; padding:10px 14px; cursor:pointer; }
+    .done { background:#e8f6ee; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>건설 현장 안전 체크리스트</h1>
+    <p>작업 전 항목을 확인하고 체크하세요. 결과는 이 기기에 저장됩니다.</p>
+  </header>
+  <main>
+    <div class="bar">완료 <strong id="count">0 / 0</strong></div>
+    <div id="list"></div>
+    <button type="button" id="reset">전체 초기화</button>
+  </main>
+  <script>
+    const data = [
+      { t: "개인 보호구", i: ["안전모 착용", "안전화 착용", "안전대/안전벨트 착용", "보안경·장갑 착용"] },
+      { t: "작업 전 점검", i: ["작업 허가 확인", "위험 구역 표지 설치", "장비 이상 유무 확인", "비상구·대피로 확보"] },
+      { t: "현장 환경", i: ["바닥 정리·미끄럼 방지", "자재 적재 상태 확인", "전기 설비 누전 점검", "소화기 위치 확인"] },
+      { t: "고소·굴착", i: ["비계·발판 고정 확인", "추락 방지망 설치", "굴착면 붕괴 위험 확인", "개구부 덮개 설치"] }
+    ];
+    const key = "site-safety-checks";
+    const saved = JSON.parse(localStorage.getItem(key) || "{}");
+    const root = document.getElementById("list");
+    let total = 0;
+    data.forEach((g, gi) => {
+      const s = document.createElement("section");
+      s.innerHTML = "<h2>" + g.t + "</h2>";
+      g.i.forEach((text, ii) => {
+        const id = gi + "-" + ii;
+        total++;
+        const lab = document.createElement("label");
+        if (saved[id]) lab.className = "done";
+        lab.innerHTML = '<input type="checkbox" data-id="' + id + '"' + (saved[id] ? " checked" : "") + "> <span>" + text + "</span>";
+        s.appendChild(lab);
+      });
+      root.appendChild(s);
+    });
+    function upd() {
+      const boxes = [...document.querySelectorAll("input[type=checkbox]")];
+      const n = boxes.filter(b => b.checked).length;
+      document.getElementById("count").textContent = n + " / " + total;
+      const st = {};
+      boxes.forEach(b => {
+        st[b.dataset.id] = b.checked;
+        b.parentElement.classList.toggle("done", b.checked);
+      });
+      localStorage.setItem(key, JSON.stringify(st));
+    }
+    document.addEventListener("change", upd);
+    document.getElementById("reset").onclick = () => {
+      document.querySelectorAll("input[type=checkbox]").forEach(b => b.checked = false);
+      upd();
+    };
+    upd();
+  </script>
+</body>
+</html>
