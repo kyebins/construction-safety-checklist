@@ -5,33 +5,66 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>건설 현장 안전 체크리스트</title>
   <style>
-    :root { --bg:#0f3d2e; --card:#fff; --ok:#1b7a4e; --warn:#c0392b; }
+    :root { --bg:#123c2c; --ok:#1b7a4e; --line:#dce7e1; }
     * { box-sizing: border-box; }
-    body { margin:0; font-family:"Malgun Gothic",sans-serif; background:#eef4f0; color:#1a1a1a; }
-    header { background:var(--bg); color:#fff; padding:20px 16px; }
-    h1 { margin:0 0 6px; font-size:1.35rem; }
-    header p { margin:0; opacity:.9; font-size:.9rem; }
-    main { max-width:720px; margin:16px auto; padding:0 12px 40px; }
-    .bar { background:var(--card); border-radius:10px; padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,.08); }
-    .bar strong { color:var(--ok); }
-    section { background:var(--card); border-radius:10px; margin-bottom:12px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    body { margin:0; font-family:"Malgun Gothic",sans-serif; background:#e8efe9; color:#1c241f; }
+    header { background:linear-gradient(160deg,#123c2c,#1d5a42); color:#fff; padding:22px 16px 18px; }
+    .wrap { max-width:760px; margin:0 auto; }
+    .tag { display:inline-block; background:#f0b429; color:#1c241f; font-size:.72rem; font-weight:700; padding:3px 8px; border-radius:4px; }
+    h1 { margin:10px 0 6px; font-size:1.4rem; }
+    header p { margin:0; opacity:.9; font-size:.9rem; line-height:1.45; }
+    main { max-width:760px; margin:-18px auto 0; padding:0 12px 36px; }
+    .card { background:#fff; border-radius:12px; padding:14px; margin-bottom:12px; box-shadow:0 2px 10px rgba(18,60,44,.08); }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .field { display:flex; flex-direction:column; gap:4px; font-size:.8rem; color:#4a5c54; }
+    .field input { border:1px solid var(--line); border-radius:8px; padding:8px; font:inherit; }
+    .bar-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .bar-top strong { color:var(--ok); }
+    .track { height:8px; background:#e3ece7; border-radius:99px; overflow:hidden; }
+    .fill { height:100%; width:0; background:#1b7a4e; }
+    .status { margin-top:8px; font-size:.85rem; color:#4a5c54; }
+    section { background:#fff; border-radius:12px; margin-bottom:12px; overflow:hidden; box-shadow:0 2px 10px rgba(18,60,44,.08); }
     h2 { margin:0; padding:12px 14px; background:#1b5c43; color:#fff; font-size:1rem; }
-    label { display:flex; gap:10px; padding:10px 14px; border-top:1px solid #eee; cursor:pointer; }
+    label { display:flex; gap:10px; padding:11px 14px; border-top:1px solid #eef3f0; cursor:pointer; }
     label:hover { background:#f7faf8; }
-    button { background:var(--bg); color:#fff; border:0; border-radius:8px; padding:10px 14px; cursor:pointer; }
     .done { background:#e8f6ee; }
+    .actions { display:flex; gap:8px; }
+    button { border:0; border-radius:8px; padding:11px 14px; cursor:pointer; font:inherit; }
+    #reset { background:#fff; color:#7a2e2e; border:1px solid #e2c4c4; }
+    footer { max-width:760px; margin:0 auto; padding:0 12px 28px; color:#4a5c54; font-size:.82rem; }
+    @media (max-width:560px) { .grid { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
   <header>
-    <h1>건설 현장 안전 체크리스트</h1>
-    <p>작업 전 항목을 확인하고 체크하세요. 결과는 이 기기에 저장됩니다.</p>
+    <div class="wrap">
+      <span class="tag">작업 전 필수 점검</span>
+      <h1>건설 현장 안전 체크리스트</h1>
+      <p>작업 시작 전 현장 책임자가 항목을 확인하세요. 입력 내용과 체크 결과는 이 기기에만 저장됩니다.</p>
+    </div>
   </header>
   <main>
-    <div class="bar">완료 <strong id="count">0 / 0</strong></div>
+    <div class="card">
+      <div class="grid">
+        <label class="field">점검일 <input id="date" type="date"></label>
+        <label class="field">현장명 <input id="site" placeholder="예: ○○아파트 신축 현장"></label>
+        <label class="field">점검자 <input id="who" placeholder="성명 / 직책"></label>
+        <label class="field">작업 구역 <input id="zone" placeholder="예: 3동 지하 1층"></label>
+      </div>
+    </div>
+    <div class="card">
+      <div class="bar-top">점검 진행률 <strong id="count">0 / 0</strong></div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <div class="status" id="status">점검을 시작해 주세요.</div>
+    </div>
     <div id="list"></div>
-    <button type="button" id="reset">전체 초기화</button>
+    <div class="actions">
+      <button type="button" id="reset">전체 초기화</button>
+    </div>
   </main>
+  <footer>
+    미완료 항목이 있으면 작업을 시작하지 마세요. 긴급 상황: 119 / 현장 관리사무소에 즉시 보고.
+  </footer>
   <script>
     const data = [
       { t: "개인 보호구", i: ["안전모 착용", "안전화 착용", "안전대/안전벨트 착용", "보안경·장갑 착용"] },
@@ -40,7 +73,15 @@
       { t: "고소·굴착", i: ["비계·발판 고정 확인", "추락 방지망 설치", "굴착면 붕괴 위험 확인", "개구부 덮개 설치"] }
     ];
     const key = "site-safety-checks";
+    const metaKey = "site-safety-meta";
     const saved = JSON.parse(localStorage.getItem(key) || "{}");
+    const meta = JSON.parse(localStorage.getItem(metaKey) || "{}");
+    const dateEl = document.getElementById("date");
+    const fields = { date: dateEl, site: document.getElementById("site"), who: document.getElementById("who"), zone: document.getElementById("zone") };
+    dateEl.value = meta.date || new Date().toISOString().slice(0, 10);
+    fields.site.value = meta.site || "";
+    fields.who.value = meta.who || "";
+    fields.zone.value = meta.zone || "";
     const root = document.getElementById("list");
     let total = 0;
     data.forEach((g, gi) => {
@@ -56,10 +97,17 @@
       });
       root.appendChild(s);
     });
+    function saveMeta() {
+      localStorage.setItem(metaKey, JSON.stringify({
+        date: fields.date.value, site: fields.site.value, who: fields.who.value, zone: fields.zone.value
+      }));
+    }
     function upd() {
       const boxes = [...document.querySelectorAll("input[type=checkbox]")];
       const n = boxes.filter(b => b.checked).length;
       document.getElementById("count").textContent = n + " / " + total;
+      document.getElementById("fill").style.width = (total ? (n / total) * 100 : 0) + "%";
+      document.getElementById("status").textContent = n === total ? "모든 항목 확인 완료. 작업 시작 가능합니다." : "미완료 " + (total - n) + "건. 작업 시작 전 남은 항목을 확인하세요.";
       const st = {};
       boxes.forEach(b => {
         st[b.dataset.id] = b.checked;
@@ -68,10 +116,12 @@
       localStorage.setItem(key, JSON.stringify(st));
     }
     document.addEventListener("change", upd);
+    document.querySelectorAll(".field input").forEach(el => el.addEventListener("input", saveMeta));
     document.getElementById("reset").onclick = () => {
       document.querySelectorAll("input[type=checkbox]").forEach(b => b.checked = false);
       upd();
     };
+    saveMeta();
     upd();
   </script>
 </body>
